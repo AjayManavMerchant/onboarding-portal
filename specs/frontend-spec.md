@@ -74,7 +74,7 @@ After login, go to: HR → `/hr`; Manager → `/manager`; Employee → `/employe
 ### 3.1 Home `/`
 - Title: "Employee Onboarding & Internal Movement Portal".
 - Two large cards side by side (stacked on mobile):
-  - **New Joiner** — "Register, get HR approval and complete your onboarding." Buttons: **Register** → `/register`. Secondary link: "Already registered? Check status" → `/register/status`. Secondary link: "Approved? Log in" → `/login`.
+  - **New Joiner** — "Register, get HR approval and complete your onboarding." Buttons: **Register** → `/register`. Secondary link: **"Check registration status"** → `/register/status`. Secondary link: "Approved? Log in" → `/login`.
   - **Internal Movement** — "Moving to a new team? Request the move and complete the new team's onboarding." Button: **Start internal movement** → `/login?flow=internal-movement`.
 - Below the cards: a small "Demo login for HR and managers" link → `/login`.
 
@@ -97,14 +97,14 @@ Fields:
 
   Links: "Check status" → `/register/status?id=REG-001`, "Back to home".
 
-### 3.3 Registration status `/register/status`
-- One input: "Request ID or official email", and a **Check status** button. It reads `?id=` from the URL and checks it straight away.
+### 3.3 Check registration status `/register/status`
+- Public page, no login needed. Linked from Home and from the registration confirmation.
+- One input: "Request ID" (placeholder `REG-001`; matching ignores case and extra spaces), and a **Check status** button. It reads `?id=` from the URL and checks it straight away.
 - Result card: Request ID, Name, Submitted date, `StatusBadge`.
   - Pending: info text "HR has not reviewed your request yet."
   - Approved: success text "Your account has been approved. You can now log in." plus a **Log in** button → `/login`.
   - Rejected: error banner "Your registration was rejected." plus **HR comment:** "{comment}" (or "No comment provided."). Also "You can submit a new registration." → `/register`. (Covers AC3.)
-- Not found: "No registration found for that request ID or email."
-- If an email matches more than one registration, show the newest one.
+- Not found: "No registration found with that request ID."
 
 ### 3.4 Demo login `/login`
 - Title: "Demo login". Subtitle: "No password needed — pick a demo user."

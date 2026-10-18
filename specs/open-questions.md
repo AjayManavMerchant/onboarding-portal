@@ -4,7 +4,7 @@ Each question has a **default** that the specs already use, so building is not b
 
 | # | Question | Default used in specs | Where it matters |
 |---|---|---|---|
-| Q1 | Where does a **rejected** new joiner see the HR comment? They cannot log in. | A public `/register/status` page: look up by request ID or email. | frontend §3.3, AC3 |
+| Q1 | Where does a **rejected** new joiner see the HR comment? They cannot log in. | ✅ **Decided:** a public "Check registration status" page linked from Home. Look up by **request ID only**, no login. | frontend §3.3, AC3 |
 | Q2 | Who can use **Internal Movement**: only Rahul, or any active employee with a team (for example a new joiner who finished Journey A)? | Any active employee with a current team. | data BR13, frontend §3.4 |
 | Q3 | Rahul's starting **Team A checklist**: fully complete, or not started? | Fully complete, so his overall status starts as `Completed`. | data §8.5 |
 | Q4 | While a move is pending, should Rahul's overall status show `Pending Team Approval`, or stay `Completed` for Team A? And should Manager A still see him in Team Progress? | `Pending Team Approval`; Manager A still sees him until approval. | data §5 |

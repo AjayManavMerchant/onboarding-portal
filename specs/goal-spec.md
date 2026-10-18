@@ -115,7 +115,7 @@ The MVP is done when **all** of these pass in a manual demo on the deployed Verc
 
 Defaults chosen so work is not blocked. Each one is listed in `open-questions.md` and can be changed.
 
-- A rejected new joiner checks the result on a **registration status page** by entering the request ID or email.
+- **Decided (Q1):** a rejected new joiner checks the result on a public **"Check registration status"** page linked from Home, by entering their request ID. No login needed.
 - Internal Movement can be used by **any active employee who has a current team**. Rahul is the only one at seed time.
 - Rahul's Team A checklist is seeded as **fully complete**, so his starting overall status is `Completed`.
 - During a pending team or movement request, the employee's overall status is `Pending Team Approval`.
