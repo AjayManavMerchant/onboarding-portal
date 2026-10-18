@@ -55,19 +55,27 @@ Click **Reset demo data** → confirm. All registrations, requests and progress 
 
 ## Screenshots
 
-Screenshots of the key screens live in [`docs/screenshots/`](docs/screenshots/):
+All screenshots are in [`docs/screenshots/`](docs/screenshots/) and were taken on the live Vercel deployment.
 
-| Screen | File |
-|---|---|
-| Home | [home.png](docs/screenshots/home.png) |
-| Registration confirmation | [registration-confirmation.png](docs/screenshots/registration-confirmation.png) |
-| HR dashboard | [hr-dashboard.png](docs/screenshots/hr-dashboard.png) |
-| Employee — team selection locked | [employee-locked.png](docs/screenshots/employee-locked.png) |
-| Employee — team selection unlocked | [employee-unlocked.png](docs/screenshots/employee-unlocked.png) |
-| Employee — team checklists | [team-checklists.png](docs/screenshots/team-checklists.png) |
-| Manager dashboard | [manager-dashboard.png](docs/screenshots/manager-dashboard.png) |
-| Internal movement — pending | [movement-pending.png](docs/screenshots/movement-pending.png) |
-| Internal movement — approved | [movement-approved.png](docs/screenshots/movement-approved.png) |
+| # | Screen | File |
+|---|---|---|
+| 1 | Home — New Joiner and Internal Movement entry points | [01-home.png](docs/screenshots/01-home.png) |
+| 2 | Registration form | [02-registration_1.png](docs/screenshots/02-registration_1.png) |
+| 2 | Registration confirmation — REG-001, Pending HR Approval | [02-registration_2.png](docs/screenshots/02-registration_2.png) |
+| 3 | Demo login as Priya (HR) | [03-hr-dashboard_1.png](docs/screenshots/03-hr-dashboard_1.png) |
+| 3 | HR dashboard — pending registration | _screenshot pending_ |
+| 3 | HR dashboard — approve / reject controls | _screenshot pending_ |
+| 3 | HR dashboard — REG-001 approved | [03-hr-dashboard_4.png](docs/screenshots/03-hr-dashboard_4.png) |
+| 4 | Approved new joiner in the login dropdown | [04-employee-checklist_1.png](docs/screenshots/04-employee-checklist_1.png) |
+| 4 | Employee dashboard — basic checklists, nothing completed | [04-employee-checklist_2.png](docs/screenshots/04-employee-checklist_2.png) |
+| 4 | Basic onboarding complete — team selection unlocked, manager auto-filled | [04-employee-checklist_3.png](docs/screenshots/04-employee-checklist_3.png) |
+| 4 | Team request TEAM-001 pending — basic items locked | [04-employee-checklist_4.png](docs/screenshots/04-employee-checklist_4.png) |
+| 5 | Manager dashboard — pending approval and team progress | [05-manager-dashboard_1.png](docs/screenshots/05-manager-dashboard_1.png) |
+| 5 | Manager dashboard — TEAM-001 approved, new joiner in team progress | [05-manager-dashboard_2.png](docs/screenshots/05-manager-dashboard_2.png) |
+| 6 | New joiner after approval — team assigned, basics locked | [06-team-checklist_1.png](docs/screenshots/06-team-checklist_1.png) |
+| 6 | Team-specific checklists for the approved team only | [06-team-checklist_2.png](docs/screenshots/06-team-checklist_2.png) |
+| 7 | Existing employee (Rahul) — dashboard before internal movement | [07-internal-movement_1.png](docs/screenshots/07-internal-movement_1.png) |
+| 7 | Existing employee (Rahul) — onboarding Completed, "Start internal movement" link | [07-internal-movement_2.png](docs/screenshots/07-internal-movement_2.png) |
 
 ## Tech stack
 
