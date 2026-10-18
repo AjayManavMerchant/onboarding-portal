@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design Decisions &amp; Interview Prep — Onboarding Portal</title>
+<meta name="description" content="Design decisions, architecture, testing and interview preparation for the Employee Onboarding & Internal Movement Portal MVP.">
+<style>
+  :root {
+    --bg: #f8fafc; --surface: #ffffff; --text: #0f172a; --muted: #475569; --border: #e2e8f0;
+    --accent: #4f46e5; --accent-soft: #eef2ff; --ok: #15803d; --ok-soft: #f0fdf4; --warn-soft: #fffbeb; --code: #f1f5f9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1120; --surface: #111827; --text: #e5e7eb; --muted: #9ca3af; --border: #1f2937;
+      --accent: #818cf8; --accent-soft: #1e1b4b; --ok: #4ade80; --ok-soft: #052e16; --warn-soft: #2a2108; --code: #1f2937;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  a { color: var(--accent); }
+  p, li, td, .box { overflow-wrap: anywhere; }
+  code { background: var(--code); padding: .1em .35em; border-radius: 4px; font-size: .9em; word-break: break-word; }
+  header.hero { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #fff; padding: 40px 16px 32px; }
+  header.hero a { color: #fff; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+  .hero .wrap { padding: 0; }
+  .hero h1 { margin: 0 0 8px; font-size: clamp(1.5rem, 4vw, 2.2rem); line-height: 1.2; }
+  .hero p { margin: 4px 0; opacity: .92; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .chip { background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: 2px 12px; font-size: .85rem; }
+  nav.toc { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 1px solid var(--border); }
+  nav.toc .wrap { display: flex; gap: 4px; overflow-x: auto; padding-top: 8px; padding-bottom: 8px; scrollbar-width: thin; }
+  nav.toc a { white-space: nowrap; text-decoration: none; color: var(--muted); font-size: .9rem; padding: 6px 10px; border-radius: 6px; }
+  nav.toc a:hover { background: var(--accent-soft); color: var(--accent); }
+  main { padding: 24px 0 64px; }
+  section { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px 20px; margin: 20px 0; }
+  section > h2 { margin: 0 0 12px; font-size: 1.35rem; display: flex; gap: 10px; align-items: baseline; }
+  .num { color: var(--accent); font-variant-numeric: tabular-nums; }
+  h3 { margin: 20px 0 8px; font-size: 1.05rem; }
+  p, li { color: var(--text); }
+  .muted { color: var(--muted); }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .card { border: 1px solid var(--border); border-radius: 10px; padding: 14px; background: var(--bg); }
+  .card h4 { margin: 0 0 4px; font-size: 1rem; }
+  .card p { margin: 0; font-size: .93rem; color: var(--muted); }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; position: relative; }
+  table { border-collapse: collapse; width: 100%; font-size: .92rem; min-width: 640px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  th { background: var(--bg); font-size: .78rem; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
+  tr:last-child td { border-bottom: 0; }
+  td:first-child { font-weight: 600; }
+  /* Phones: each row becomes a card with labelled cells, so no column is hidden off-screen. */
+  @media (max-width: 639px) {
+    .table-wrap { overflow: visible; border: 0; }
+    table { min-width: 0; }
+    thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    tr { display: block; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; background: var(--bg); }
+    td { display: block; border-bottom: 1px solid var(--border); padding: 8px 12px; }
+    td:first-child { background: var(--accent-soft); border-radius: 10px 10px 0 0; }
+    td:not(:first-child)::before { content: attr(data-label); display: block; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 2px; }
+  }
+  /* Pipeline */
+  .pipeline { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; list-style: none; padding: 0; margin: 12px 0 0; counter-reset: step; }
+  .pipeline li { flex: 1 1 140px; border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--bg); position: relative; counter-increment: step; }
+  .pipeline li::before { content: counter(step); display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; font-size: .75rem; font-weight: 700; margin-right: 6px; }
+  .pipeline b { font-size: .98rem; }
+  .pipeline span { display: block; font-size: .85rem; color: var(--muted); margin-top: 4px; }
+  /* Architecture diagram */
+  .arch { display: grid; gap: 10px; margin-top: 12px; }
+  .layer { border: 2px solid var(--border); border-radius: 12px; padding: 12px; background: var(--bg); }
+  .layer > .label { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
+  .boxes { display: flex; flex-wrap: wrap; gap: 8px; }
+  .box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: .88rem; }
+  .box code { background: none; padding: 0; }
+  .layer.ui { border-color: #a5b4fc; }
+  .layer.store { border-color: #f59e0b; background: var(--warn-soft); }
+  .layer.logic { border-color: #22c55e; background: var(--ok-soft); }
+  .arrow { text-align: center; color: var(--muted); font-size: .85rem; line-height: 1.2; }
+  .arrow::before { content: "▼"; display: block; color: var(--accent); }
+  .split { display: grid; gap: 10px; grid-template-columns: 1fr; }
+  @media (min-width: 640px) { .split { grid-template-columns: 2fr 1fr; } }
+  /* Q&A */
+  details { border: 1px solid var(--border); border-radius: 10px; margin: 10px 0; background: var(--bg); }
+  summary { cursor: pointer; padding: 12px 14px; font-weight: 600; list-style: none; display: flex; gap: 10px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; margin-left: auto; color: var(--accent); font-weight: 700; }
+  details[open] summary::after { content: "–"; }
+  details .answer { padding: 0 14px 14px; }
+  details .answer p { margin: 0 0 8px; }
+  .qn { color: var(--accent); min-width: 1.6em; }
+  .callout { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 12px 0; }
+  ul.tight li { margin: 4px 0; }
+  footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 0 16px 32px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>Design Decisions &amp; Interview Prep — Onboarding Portal</h1>
+    <p>Employee Onboarding &amp; Internal Movement Portal · MVP 1.0 · one developer, one day</p>
+    <p>Live app: <a href="/">onboarding-portal-lake.vercel.app</a> · Code: <a href="https://github.com/AjayManavMerchant/onboarding-portal">github.com/AjayManavMerchant/onboarding-portal</a></p>
+    <div class="chips">
+      <span class="chip">Next.js 16 · React 19</span><span class="chip">TypeScript strict</span><span class="chip">Tailwind CSS v4</span>
+      <span class="chip">localStorage</span><span class="chip">Vitest · 40 tests</span><span class="chip">Vercel</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Sections">
+  <div class="wrap">
+    <a href="#problem">1. Problem</a><a href="#process">2. How it was built</a><a href="#decisions">3. Decisions</a>
+    <a href="#architecture">4. Architecture</a><a href="#testing">5. Testing</a><a href="#limits">6. Limitations</a><a href="#interview">7. Interview prep</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<section id="problem">
+  <h2><span class="num">1</span> Problem and users</h2>
+  <p>New joiners and employees moving teams have no single place that tells them what to complete, in what order, and who must approve them. HR and managers have no simple view of who is waiting on them and how far each person has got.</p>
+  <p>The goal was a <strong>single-browser demo prototype</strong>, built in one day and deployed publicly on Vercel, that shows two complete journeys end to end:</p>
+  <div class="grid">
+    <div class="card"><h4>Journey A — New Joiner</h4><p>Register → HR approval → basic onboarding (4 accesses + 4 trainings) → choose team → manager approval → team onboarding (3 + 3) → <strong>Completed</strong>.</p></div>
+    <div class="card"><h4>Journey B — Internal Movement</h4><p>Existing employee requests a new team → new manager approves → new team onboarding → <strong>Completed</strong>. Current team stays the same until approval.</p></div>
+  </div>
+  <h3>Users</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Role</th><th>Demo users</th><th>What they do</th></tr></thead>
+    <tbody>
+      <tr><td>HR</td><td>Priya</td><td>Approve or reject registrations. Activates the account only — does not assign teams.</td></tr>
+      <tr><td>Manager</td><td>Manager A (Team A, Engineering), Manager B (Team B, Data &amp; Analytics), Manager C (Team C, IT)</td><td>Approve or reject team requests for their own team only; track their own team's progress.</td></tr>
+      <tr><td>Employee (existing)</td><td>Rahul (Team A, onboarding complete)</td><td>Runs the internal movement journey.</td></tr>
+      <tr><td>Employee (new joiner)</td><td>Created through registration</td><td>Runs the new joiner journey after HR approval.</td></tr>
+      <tr><td>Visitor</td><td>—</td><td>Sees Home, registers, checks registration status, picks a demo user, resets demo data.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="muted">Source: <code>docs/vision.md</code> §1–§2, <code>specs/goal-spec.md</code> §1–§3.</p>
+</section>
+
+<section id="process">
+  <h2><span class="num">2</span> How it was built — spec-driven development with Claude Code</h2>
+  <p>Every stage produced an artifact committed to the repo, and each stage was the input to the next. Claude Code did the writing and building; I approved the plan for each phase and made the product decisions.</p>
+  <ol class="pipeline">
+    <li><b>Vision</b><span><code>docs/vision.md</code> — roles, both journeys, status model, business rules, 11 acceptance criteria, out-of-scope list.</span></li>
+    <li><b>Specs</b><span>Goal, data and frontend specs: data model, 21 business rules (BR1–BR21), every page and its copy.</span></li>
+    <li><b>Open questions</b><span>8 ambiguities (Q1–Q8), each with a default so work was never blocked, then decided.</span></li>
+    <li><b>Phased plan</b><span>5 phases, each ending deployable and checked against specific ACs, plus an ordered cut list.</span></li>
+    <li><b>Build</b><span>One commit per phase on <code>main</code>; plan shown and approved before implementing.</span></li>
+    <li><b>Tests</b><span>Vitest unit tests for the rules after every phase; tests + lint + build before each commit.</span></li>
+    <li><b>Vercel</b><span>First deploy at the end of Phase 1; every push to <code>main</code> redeploys automatically.</span></li>
+  </ol>
+  <h3>The five phases</h3>
+  <ol class="tight">
+    <li>Setup, seed data, demo login, registration, HR approval — AC1, AC2, AC3, AC10, first deploy (AC11)</li>
+    <li>Basic checklists, progress, team-selection unlock — AC4, AC5</li>
+    <li>Team request, manager approval, team checklists, manager dashboard — AC6, AC7, AC9</li>
+    <li>Internal movement — AC8</li>
+    <li>Mobile-width pass, README, screenshots, final deploy</li>
+  </ol>
+  <div class="callout"><strong>Why specs first?</strong> The specs were the source of truth. When a decision changed (e.g. Q8, locking basic items for employees who already have a team), the spec was updated in the same change as the code, so the documents never drifted from the app. Nothing on the cut list had to be dropped.</div>
+</section>
+
+<section id="decisions">
+  <h2><span class="num">3</span> Key design decisions</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Decision</th><th>Reason</th><th>Trade-off</th></tr></thead>
+    <tbody>
+      <tr><td>MVP scoping</td><td>One developer, one day. Scope fixed to two journeys and 11 acceptance criteria; explicit non-goals (SSO, emails, database, admin page, audit logs, AI). Ordered cut list to protect the ACs.</td><td>No production features; the app is a demo, not a product.</td></tr>
+      <tr><td>Next.js (App Router) + TypeScript + Tailwind</td><td>Required by the vision; first-class Vercel hosting; strict types make the data spec (§3) the compile-time contract.</td><td>All pages are client components (data lives in the browser), so server rendering only produces a "Loading…" shell.</td></tr>
+      <tr><td>localStorage instead of a database</td><td>No server, no accounts, nothing to provision. One versioned key (<code>onboarding-portal:state:v1</code>); a missing, corrupt or old-version state is reseeded. All access goes through one module, <code>store.ts</code>.</td><td>Data is per browser: two reviewers never share data. A demo-mode bar and the README say so.</td></tr>
+      <tr><td>Demo login instead of SSO</td><td>One reviewer must play HR, three managers and employees in one browser. A dropdown of seeded and approved users; no passwords.</td><td>No real security: anyone can pick any user. Route guards only control navigation.</td></tr>
+      <tr><td>Manager auto-filled from team (BR4)</td><td><code>TeamRequest.managerId</code> is always copied from <code>Team.managerId</code>; the form has no free manager field.</td><td>An employee cannot pick a different reporting manager than the team's manager.</td></tr>
+      <tr><td>Calculated overall status (BR7)</td><td>Overall status is never stored. <code>overallStatus()</code> derives it from registrations, completions, requests and assignments (6 ordered rules), so it can never disagree with the data.</td><td>Recomputed on every render; trivial at demo size, would need care at scale.</td></tr>
+      <tr><td>Registration status page by request ID (Q1)</td><td>A rejected new joiner cannot log in, but must see the HR comment (AC3). A public page looks up <code>REG-xxx</code> (case and spaces ignored).</td><td>Anyone who knows or guesses an ID can see that registration's status — acceptable for a demo only.</td></tr>
+      <tr><td>Lock basic items after team request (BR18, Q5, Q8)</td><td>Unticking a basic item after the team was unlocked would undo the unlock rule. Basic items become read-only once a New Joiner request is pending/approved or the employee has a current team.</td><td>An employee cannot correct a mistaken basic tick after submitting.</td></tr>
+      <tr><td>Internal movement keeps current team until approval (BR5, BR14)</td><td>Submitting a move changes nothing in team assignments. Only manager approval closes the old assignment and opens the new one, in one state update, so team history stays correct (AC8).</td><td>While pending, status shows "Pending Team Approval" and the old manager still sees the employee (Q4).</td></tr>
+      <tr><td>No runtime AI</td><td>Applying the course flowchart question <em>"does the task need AI?"</em>: every task here is deterministic — form validation, fixed approval rules (BR1–BR21), counting progress. None needs language understanding or generation, and AI features are an explicit non-goal in the vision.</td><td>No assistant to answer onboarding questions; listed as future work. (AI was used to build the app, not inside it.)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="architecture">
+  <h2><span class="num">4</span> Architecture</h2>
+  <p>All code runs in the browser. Pages never touch storage or change state directly — they call store actions, which run pure functions that enforce the rules.</p>
+  <div class="arch" role="img" aria-label="Architecture: pages and components call the store; the store runs pure actions and domain functions, reads seed data and persists to localStorage.">
+    <div class="layer ui">
+      <div class="label">Pages (src/app) — client components</div>
+      <div class="boxes">
+        <span class="box"><code>/</code> Home</span><span class="box"><code>/register</code></span><span class="box"><code>/register/status</code></span><span class="box"><code>/login</code></span>
+        <span class="box"><code>/employee</code></span><span class="box"><code>/movement</code></span><span class="box"><code>/manager</code></span><span class="box"><code>/hr</code></span>
+      </div>
+      <div class="label" style="margin-top:10px">Shared components (src/components)</div>
+      <div class="boxes">
+        <span class="box">AppHeader</span><span class="box">RequireRole (route guard)</span><span class="box">ChecklistTable / Section</span><span class="box">ProgressSummary</span>
+        <span class="box">TeamSelect</span><span class="box">DecisionControls</span><span class="box">StatusBadge</span><span class="box">Banner</span>
+      </div>
+    </div>
+    <div class="arrow">useStore() to read · store.action() to write</div>
+    <div class="split">
+      <div class="layer store">
+        <div class="label">Store — src/lib/store.ts</div>
+        <p style="margin:0;font-size:.9rem">External store read with <code>useSyncExternalStore</code>. Server snapshot is <code>null</code>, so pages show "Loading…" until the browser has read storage (no hydration mismatch). Saves the whole state after every action. Syncs other tabs via the <code>storage</code> event.</p>
+      </div>
+      <div class="layer">
+        <div class="label">Browser localStorage</div>
+        <div class="boxes"><span class="box"><code>…:state:v1</code> app data</span><span class="box"><code>…:session:v1</code> current user</span></div>
+      </div>
+    </div>
+    <div class="arrow">calls pure functions: (state, input) → new state, or throws DomainError</div>
+    <div class="split">
+      <div class="layer logic">
+        <div class="label">Domain logic — pure, unit-tested</div>
+        <div class="boxes">
+          <span class="box"><code>actions.ts</code> submitRegistration · decideRegistration · toggleCompletion · submitTeamRequest · submitMoveRequest · decideTeamRequest</span>
+          <span class="box"><code>domain.ts</code> overallStatus · currentTeamId · progress · basicLocked · manager scoping · nextId</span>
+          <span class="box"><code>types.ts</code> data contract</span><span class="box"><code>labels.ts</code> display copy</span>
+        </div>
+      </div>
+      <div class="layer">
+        <div class="label">Seed data — src/data/seed.ts</div>
+        <p style="margin:0;font-size:.9rem">3 teams, 5 users, 8 basic + 18 team requirements, Rahul's starting state. <code>createSeedState()</code> returns a deep copy — used on first load and by Reset.</p>
+      </div>
+    </div>
+  </div>
+  <p class="muted">No API routes, no server actions, no database.</p>
+</section>
+
+<section id="testing">
+  <h2><span class="num">5</span> Testing</h2>
+  <p>The business rules live in pure functions, so they are tested directly without a browser. <strong>40 Vitest tests</strong> in 6 files; tests, lint and a production build ran before every commit.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>File</th><th>Tests</th><th>What it covers</th></tr></thead>
+    <tbody>
+      <tr><td><code>domain.test.ts</code></td><td>7</td><td>Seed checks from data-spec §8.6 (5 loginable users, Rahul Completed on Team A, Manager A's 3/3 · 3/3 row, requirement counts, deep-copy seed); <code>REG-001</code> ID format and per-prefix counters; request-ID lookup ignoring case and spaces.</td></tr>
+      <tr><td><code>actions.test.ts</code></td><td>8</td><td>Registration: normalising input, required fields (BR17), duplicate email case-insensitive (BR16), rejected email can re-register. HR decisions: approval creates a user with no team and no request (BR10), rejection keeps the HR comment, only HR can decide, no deciding twice, 500-character comment limit (BR9, BR21).</td></tr>
+      <tr><td><code>checklist.test.ts</code></td><td>8</td><td>Progress counts; status moves from Basic In Progress to Awaiting Team Selection on the 8th tick (AC5); untick and duplicate ticks; other teams' items rejected (BR3); basic items locked once the employee has a team (BR18, Q8).</td></tr>
+      <tr><td><code>store.test.ts</code></td><td>3</td><td>Reseeds on empty, corrupt or wrong-version storage; every action saves immediately; Reset restores the seed and clears the session (AC10); ticks survive a reload (AC4).</td></tr>
+      <tr><td><code>team-request.test.ts</code></td><td>9</td><td>TEAM-001 with manager from team (BR4); blocked before basics are done (BR2); one pending request (BR11); only the target team's manager sees and decides it (BR6, AC6); approval creates the assignment (BR14); rejection allows a new request (BR15); full Journey A to Completed with Team B items only (AC7, AC9).</td></tr>
+      <tr><td><code>movement.test.ts</code></td><td>5</td><td>MOVE-001 leaves assignments untouched while pending (BR5, AC8); cannot move to own team or submit twice (BR11, BR12, BR13); full Journey B: reject → MOVE-002 → approve, history keeps Team A, Manager A no longer sees Rahul, Team C to Completed.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>How the acceptance criteria were verified</h3>
+  <ul class="tight">
+    <li><strong>Unit tests</strong> cover the rule behind each criterion: AC2–AC10 are asserted directly (see the table).</li>
+    <li><strong>Demo scripts</strong> in <code>goal-spec.md</code> §8 (Script A and Script B) were the manual check for each phase.</li>
+    <li><strong>Headless-browser run</strong> of both journeys at 375px and 1280px, locally and on the live URL: checked for horizontal page scroll, tap targets under 40px and console/hydration errors. It found three real bugs that unit tests could not: checklist checkboxes pushed off-screen on phones, screen-reader-only text widening the page, and "Reset demo data" being redirected to <code>/login</code> by the route guard. (The script was a one-off and is not in the repo.)</li>
+    <li><strong>AC11</strong> — the app is live on a public Vercel URL; the headless run used a fresh browser with no login or stored data.</li>
+  </ul>
+</section>
+
+<section id="limits">
+  <h2><span class="num">6</span> Limitations and future work</h2>
+  <div class="grid">
+    <div class="card"><h4>Limitations</h4>
+      <ul class="tight" style="margin:6px 0 0;padding-left:18px;font-size:.93rem">
+        <li>Single browser only — data is not shared between browsers, devices or people.</li>
+        <li>No real authentication — anyone can pick any demo user.</li>
+        <li>Checklist completion is self-confirmed and not verified.</li>
+        <li>No notifications — banners on dashboards only.</li>
+        <li>Teams, managers and items are fixed in <code>seed.ts</code>; no admin page.</li>
+        <li>Submitted registrations and requests cannot be edited or withdrawn.</li>
+      </ul>
+    </div>
+    <div class="card"><h4>Future work (vision §11)</h4>
+      <ul class="tight" style="margin:6px 0 0;padding-left:18px;font-size:.93rem">
+        <li>Real authentication / corporate SSO</li>
+        <li>Email notifications for submissions and decisions</li>
+        <li>"Request additional information" status</li>
+        <li>Administrator configuration page</li>
+        <li>Database and multi-user server storage</li>
+        <li>Audit logs, overdue tracking, analytics</li>
+        <li>Integration with real access-management and training systems</li>
+        <li>AI features, e.g. an onboarding help assistant</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="interview">
+  <h2><span class="num">7</span> Interview preparation</h2>
+  <p class="muted">Ten likely questions, with short answers grounded in the project. Tap a question to open it.</p>
+
+  <details><summary><span class="qn">1.</span> Walk me through the project in one minute.</summary><div class="answer">
+    <p>It's an onboarding and internal-movement portal built as a one-day MVP. A new joiner registers, HR approves, they complete 8 basic items, pick a team, the team's manager approves, and they finish 6 team items. An existing employee can request a move; nothing changes until the new manager approves. It's Next.js and TypeScript, data in localStorage, 40 unit tests on the business rules, deployed on Vercel. I built it spec-first with Claude Code: vision, specs, phased plan, then one phase at a time.</p>
+  </div></details>
+
+  <details><summary><span class="qn">2.</span> Why localStorage and not a database?</summary><div class="answer">
+    <p>The brief was a single-browser demo in one day, and a database was an explicit non-goal. localStorage removed all backend work and let one reviewer play every role. I kept it safe to change later: all storage goes through one module, the key is versioned, and bad or old data is reseeded. Swapping in an API would mean replacing <code>store.ts</code>, not the pages or the rules.</p>
+  </div></details>
+
+  <details><summary><span class="qn">3.</span> How do you stop the UI from breaking a business rule?</summary><div class="answer">
+    <p>Rules are enforced in the store actions, not only in the UI. Each action is a pure function that checks its rules and throws a <code>DomainError</code> with a user-facing message — for example, only the target team's manager can decide a request (BR6). The UI hides invalid options too, but the tests call the actions directly, so a rule holds even if the UI has a bug.</p>
+  </div></details>
+
+  <details><summary><span class="qn">4.</span> Why is the overall status calculated instead of stored?</summary><div class="answer">
+    <p>A stored status can drift from the data it summarises. <code>overallStatus()</code> derives it from the registration, completions, pending request and current team using six ordered rules, so it is always consistent. For example, after a move is approved it only counts the new team's items — old completions are kept but no longer count.</p>
+  </div></details>
+
+  <details><summary><span class="qn">5.</span> How did you use Claude Code, and how did you stay in control?</summary><div class="answer">
+    <p>I made it work from documents: the vision, then specs it wrote and I reviewed, then a phased plan. Ambiguities went into an open-questions file with a default for each, and I made the decisions. For every phase it showed a short plan, I approved, it implemented, ran tests, lint and build, committed and pushed. The specs stayed the source of truth and were updated whenever a decision changed.</p>
+  </div></details>
+
+  <details><summary><span class="qn">6.</span> How did you handle unclear requirements?</summary><div class="answer">
+    <p>Each one became a numbered open question with a default that the specs already used, so building was never blocked. Example: a rejected new joiner can't log in, so where do they see the HR comment? Decision Q1: a public status page looked up by request ID. Another, Q8, came up during the build: should existing employees' basic items be locked too? Yes, so the unlock can't be undone.</p>
+  </div></details>
+
+  <details><summary><span class="qn">7.</span> Tell me about a bug you found and fixed.</summary><div class="answer">
+    <p>Clicking "Reset demo data" while logged in sent you to the login page instead of Home. Reset clears the session, so the page's route guard saw no user and redirected to <code>/login</code>, racing the header's own navigation. The fix: the guard only redirects visitors who arrive without access, not users who sign out on the page. Unit tests passed throughout; it was found by running the real journeys in a headless browser.</p>
+  </div></details>
+
+  <details><summary><span class="qn">8.</span> How did you test it, and what would you add?</summary><div class="answer">
+    <p>40 Vitest tests on the pure domain functions, named after the rules and acceptance criteria they check, including both full journeys. On top of that, the demo scripts by hand and a headless-browser run on the live URL at phone width. Next I'd commit that browser run as Playwright end-to-end tests in CI, so UI regressions are caught automatically like the rules are.</p>
+  </div></details>
+
+  <details><summary><span class="qn">9.</span> What would it take to make this production-ready?</summary><div class="answer">
+    <p>Replace localStorage with a database behind an API, and move rule checks to the server so they're actually enforced. Add SSO and real authorisation (today the demo login is just a role switcher), email notifications, audit logs, and an admin page for teams and checklists. Because the rules are already pure functions with tests, they can move to the server largely unchanged.</p>
+  </div></details>
+
+  <details><summary><span class="qn">10.</span> Why didn't you add AI to the product?</summary><div class="answer">
+    <p>I asked the course flowchart question first: does the task need AI? Here it doesn't — every step is a fixed rule, a form or a count, and deterministic code is cheaper, testable and predictable. AI features were also an explicit non-goal for the MVP. I did use AI to build it. A good future fit would be an onboarding help assistant answering questions about procedures, which the vision lists as future work.</p>
+  </div></details>
+</section>
+
+</main>
+<script>
+  // Label each cell with its column header for the stacked phone layout.
+  document.querySelectorAll("table").forEach(function (t) {
+    var heads = Array.prototype.map.call(t.querySelectorAll("thead th"), function (th) { return th.textContent; });
+    t.querySelectorAll("tbody tr").forEach(function (tr) {
+      Array.prototype.forEach.call(tr.children, function (td, i) { td.setAttribute("data-label", heads[i] || ""); });
+    });
+  });
+</script>
+<footer>Built from <code>docs/vision.md</code>, <code>specs/</code> and the source code of the Onboarding Portal MVP.</footer>
+</body>
+</html>
