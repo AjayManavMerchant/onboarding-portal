@@ -63,8 +63,8 @@ All screenshots are in [`docs/screenshots/`](docs/screenshots/) and were taken o
 | 2 | Registration form | [02-registration_1.png](docs/screenshots/02-registration_1.png) |
 | 2 | Registration confirmation — REG-001, Pending HR Approval | [02-registration_2.png](docs/screenshots/02-registration_2.png) |
 | 3 | Demo login as Priya (HR) | [03-hr-dashboard_1.png](docs/screenshots/03-hr-dashboard_1.png) |
-| 3 | HR dashboard — pending registration | _screenshot pending_ |
-| 3 | HR dashboard — approve / reject controls | _screenshot pending_ |
+| 3 | HR dashboard — pending registration | [03-hr-dashboard_2.png](docs/screenshots/03-hr-dashboard_2.png) |
+| 3 | HR dashboard — approve / reject controls | [03-hr-dashboard_3.png](docs/screenshots/03-hr-dashboard_3.png) |
 | 3 | HR dashboard — REG-001 approved | [03-hr-dashboard_4.png](docs/screenshots/03-hr-dashboard_4.png) |
 | 4 | Approved new joiner in the login dropdown | [04-employee-checklist_1.png](docs/screenshots/04-employee-checklist_1.png) |
 | 4 | Employee dashboard — basic checklists, nothing completed | [04-employee-checklist_2.png](docs/screenshots/04-employee-checklist_2.png) |
