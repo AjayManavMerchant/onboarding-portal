@@ -124,3 +124,44 @@ export function basicLocked(s: AppState, empId: string): boolean {
     s.teamRequests.some((r) => r.employeeId === empId && r.type === "NEW_JOINER" && r.status !== "REJECTED")
   );
 }
+
+/** BR6: pending requests whose target team is this manager's team, oldest first. */
+export function managerPendingRequests(s: AppState, managerId: string): TeamRequest[] {
+  const team = managedTeam(s, managerId);
+  if (!team) return [];
+  return s.teamRequests
+    .filter((r) => r.toTeamId === team.id && r.status === "PENDING_MANAGER_APPROVAL")
+    .sort((a, b) => a.submittedAt.localeCompare(b.submittedAt));
+}
+
+/** Last `limit` decided requests for this manager's team, newest first. */
+export function managerRecentDecisions(s: AppState, managerId: string, limit = 5): TeamRequest[] {
+  const team = managedTeam(s, managerId);
+  if (!team) return [];
+  return s.teamRequests
+    .filter((r) => r.toTeamId === team.id && r.status !== "PENDING_MANAGER_APPROVAL")
+    .sort((a, b) => (b.decidedAt ?? "").localeCompare(a.decidedAt ?? ""))
+    .slice(0, limit);
+}
+
+export interface TeamProgressRow {
+  employee: User;
+  access: ReturnType<typeof progress>;
+  training: ReturnType<typeof progress>;
+  status: OverallStatus;
+}
+
+/** BR6, AC9: employees currently on this manager's team, with progress on this team's items only. */
+export function managerTeamProgress(s: AppState, managerId: string): TeamProgressRow[] {
+  const team = managedTeam(s, managerId);
+  if (!team) return [];
+  const reqs = teamRequirements(s, team.id);
+  return s.users
+    .filter((u) => u.role === "EMPLOYEE" && currentTeamId(s, u.id) === team.id)
+    .map((u) => ({
+      employee: u,
+      access: progress(s, u.id, reqs.filter((r) => r.kind === "ACCESS")),
+      training: progress(s, u.id, reqs.filter((r) => r.kind === "TRAINING")),
+      status: overallStatus(s, u.id),
+    }));
+}

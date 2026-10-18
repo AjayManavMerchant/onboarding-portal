@@ -1,7 +1,16 @@
 // Store actions — see specs/data-spec.md §6–7. Each takes the current state and returns a new one,
 // or throws DomainError. Rules are enforced here, not only in the UI.
-import { DomainError, basicLocked, currentTeamId, nextId, userById } from "./domain";
-import type { AppState, Decision, Registration, User } from "./types";
+import {
+  DomainError,
+  basicComplete,
+  basicLocked,
+  currentTeamId,
+  nextId,
+  pendingTeamRequest,
+  teamById,
+  userById,
+} from "./domain";
+import type { AppState, Decision, Registration, TeamAssignment, TeamId, TeamRequest, User } from "./types";
 
 const MAX_COMMENT = 500;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -129,4 +138,78 @@ export function toggleCompletion(
     ? [...s.completions, { employeeId: empId, requirementId: reqId, completedAt: now.toISOString() }]
     : s.completions.filter((c) => !(c.employeeId === empId && c.requirementId === reqId));
   return { ...s, completions };
+}
+
+function requireEmployee(s: AppState, empId: string) {
+  if (userById(s, empId)?.role !== "EMPLOYEE") throw new DomainError("Only employees can request a team.");
+}
+
+/** BR11: at most one pending team request at a time. */
+function requireNoPendingRequest(s: AppState, empId: string) {
+  const pending = pendingTeamRequest(s, empId);
+  if (pending) throw new DomainError(`You already have a pending request (${pending.id}).`);
+}
+
+/** BR4: the manager always comes from the chosen team, never from the form. */
+function requireTeam(s: AppState, teamId: TeamId) {
+  const team = teamById(s, teamId);
+  if (!team) throw new DomainError("Please select a team.");
+  return team;
+}
+
+/** BR2, BR4, BR11, BR13: a new joiner without a team asks to join one. */
+export function submitTeamRequest(
+  s: AppState,
+  input: { empId: string; toTeamId: TeamId },
+  now = new Date(),
+): { state: AppState; id: string } {
+  const { empId } = input;
+  requireEmployee(s, empId);
+  if (currentTeamId(s, empId)) throw new DomainError("You already have a team. Use internal movement to change teams.");
+  if (!basicComplete(s, empId)) throw new DomainError("Complete all basic accesses and trainings before selecting a team.");
+  requireNoPendingRequest(s, empId);
+  const team = requireTeam(s, input.toTeamId);
+
+  const { id, counters } = nextId(s.counters, "TEAM");
+  const request: TeamRequest = {
+    id,
+    type: "NEW_JOINER",
+    employeeId: empId,
+    toTeamId: team.id,
+    managerId: team.managerId,
+    status: "PENDING_MANAGER_APPROVAL",
+    submittedAt: now.toISOString(),
+  };
+  return { state: { ...s, teamRequests: [...s.teamRequests, request], counters }, id };
+}
+
+/** BR6, BR14, BR15: only the target team's manager decides. Approval moves the employee in one update. */
+export function decideTeamRequest(
+  s: AppState,
+  input: { reqId: string; decision: Decision; comment?: string; actorId: string },
+  now = new Date(),
+): AppState {
+  const request = s.teamRequests.find((r) => r.id === input.reqId);
+  if (!request) throw new DomainError(`Request ${input.reqId} was not found.`);
+  if (teamById(s, request.toTeamId)?.managerId !== input.actorId) {
+    throw new DomainError("Only the manager of the requested team can decide this request.");
+  }
+  if (request.status !== "PENDING_MANAGER_APPROVAL") throw new DomainError(`Request ${request.id} has already been decided.`);
+
+  const approved = input.decision === "APPROVE";
+  const decided: TeamRequest = {
+    ...request,
+    status: approved ? "APPROVED" : "REJECTED",
+    decidedAt: now.toISOString(),
+    managerComment: normalizeComment(input.comment),
+  };
+  const next: AppState = { ...s, teamRequests: s.teamRequests.map((r) => (r.id === request.id ? decided : r)) };
+  if (!approved) return next;
+
+  const today = now.toISOString().slice(0, 10);
+  const assignments: TeamAssignment[] = s.teamAssignments.map((a) =>
+    a.employeeId === request.employeeId && !a.endDate ? { ...a, endDate: today } : a,
+  );
+  assignments.push({ employeeId: request.employeeId, teamId: request.toTeamId, startDate: today, viaRequestId: request.id });
+  return { ...next, teamAssignments: assignments };
 }

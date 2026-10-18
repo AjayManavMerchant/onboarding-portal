@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Banner } from "@/components/Banner";
 import { ChecklistSection } from "@/components/ChecklistSection";
 import { RequireRole } from "@/components/RequireRole";
@@ -12,14 +12,17 @@ import {
   basicLocked,
   basicRequirements,
   currentTeamId,
+  DomainError,
+  latestTeamRequest,
   overallStatus,
+  pendingTeamRequest,
   progress,
   teamById,
   teamRequirements,
   userById,
 } from "@/lib/domain";
 import { COPY } from "@/lib/labels";
-import type { LoadedStore } from "@/lib/store";
+import { store, type LoadedStore } from "@/lib/store";
 import type { AppState, TeamId, User } from "@/lib/types";
 
 function LockIcon() {
@@ -36,7 +39,23 @@ function LockIcon() {
 
 function TeamSection({ state, empId }: { state: AppState; empId: string }) {
   const [teamId, setTeamId] = useState<TeamId | "">("");
+  const [error, setError] = useState<string | null>(null);
   const team = teamById(state, currentTeamId(state, empId));
+  const pending = pendingTeamRequest(state, empId);
+  const latest = latestTeamRequest(state, empId);
+
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    if (!teamId) return setError("Please select a team.");
+    try {
+      store.submitTeamRequest(empId, teamId);
+      setError(null);
+      setTeamId("");
+    } catch (err) {
+      if (!(err instanceof DomainError)) throw err;
+      setError(err.message);
+    }
+  }
 
   let body;
   if (team) {
@@ -54,14 +73,35 @@ function TeamSection({ state, empId }: { state: AppState; empId: string }) {
         <p>Complete all basic accesses and trainings to unlock team selection ({remaining} items remaining).</p>
       </div>
     );
+  } else if (pending) {
+    body = (
+      <Banner variant="info">
+        <span className="inline-flex flex-wrap items-center gap-1">
+          Your request <strong>{pending.id}</strong> to join <strong>{teamById(state, pending.toTeamId)?.name}</strong> is{" "}
+          <StatusBadge status={pending.status} /> with <strong>{userById(state, pending.managerId)?.name}</strong>.
+        </span>
+      </Banner>
+    );
   } else {
     body = (
-      <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
-        <TeamSelect state={state} value={teamId} onChange={setTeamId} />
-        <button type="submit" disabled className="btn btn-primary">
-          Submit team request
-        </button>
-      </form>
+      <>
+        {latest?.status === "REJECTED" && (
+          <Banner variant="warning">
+            <p>
+              Your request {latest.id} for {teamById(state, latest.toTeamId)?.name} was rejected by{" "}
+              {userById(state, latest.managerId)?.name}.
+            </p>
+            <p className="mt-1">Manager comment: {latest.managerComment ?? "No comment provided."}</p>
+          </Banner>
+        )}
+        <form onSubmit={submit} className="space-y-4">
+          <TeamSelect state={state} value={teamId} onChange={setTeamId} />
+          {error && <Banner variant="error">{error}</Banner>}
+          <button type="submit" disabled={!teamId} className="btn btn-primary">
+            Submit team request
+          </button>
+        </form>
+      </>
     );
   }
 

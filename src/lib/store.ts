@@ -5,7 +5,7 @@ import { useMemo, useSyncExternalStore } from "react";
 import { SCHEMA_VERSION, createSeedState } from "@/data/seed";
 import * as actions from "./actions";
 import { userById } from "./domain";
-import type { AppState, Decision, User } from "./types";
+import type { AppState, Decision, TeamId, User } from "./types";
 
 export const STATE_KEY = "onboarding-portal:state:v1";
 export const SESSION_KEY = "onboarding-portal:session:v1";
@@ -94,6 +94,14 @@ export const store = {
   },
   toggleCompletion(empId: string, reqId: string, checked: boolean) {
     commit({ state: actions.toggleCompletion(getSnapshot().state, { empId, reqId, checked }) });
+  },
+  submitTeamRequest(empId: string, toTeamId: TeamId): string {
+    const { state, id } = actions.submitTeamRequest(getSnapshot().state, { empId, toTeamId });
+    commit({ state });
+    return id;
+  },
+  decideTeamRequest(reqId: string, decision: Decision, comment: string | undefined, actorId: string) {
+    commit({ state: actions.decideTeamRequest(getSnapshot().state, { reqId, decision, comment, actorId }) });
   },
   setCurrentUser(userId: string | null) {
     commit({ currentUserId: userId });
