@@ -9,6 +9,7 @@ import type {
   TeamAssignment,
   TeamId,
   TeamRequest,
+  TeamRequestType,
   User,
 } from "./types";
 
@@ -92,9 +93,9 @@ export function pendingTeamRequest(s: AppState, empId: string): TeamRequest | un
   return s.teamRequests.find((r) => r.employeeId === empId && r.status === "PENDING_MANAGER_APPROVAL");
 }
 
-export function latestTeamRequest(s: AppState, empId: string): TeamRequest | undefined {
+export function latestTeamRequest(s: AppState, empId: string, type?: TeamRequestType): TeamRequest | undefined {
   return s.teamRequests
-    .filter((r) => r.employeeId === empId)
+    .filter((r) => r.employeeId === empId && (!type || r.type === type))
     .reduce<TeamRequest | undefined>((latest, r) => (!latest || r.submittedAt >= latest.submittedAt ? r : latest), undefined);
 }
 

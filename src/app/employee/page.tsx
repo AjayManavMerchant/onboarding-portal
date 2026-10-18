@@ -42,7 +42,7 @@ function TeamSection({ state, empId }: { state: AppState; empId: string }) {
   const [error, setError] = useState<string | null>(null);
   const team = teamById(state, currentTeamId(state, empId));
   const pending = pendingTeamRequest(state, empId);
-  const latest = latestTeamRequest(state, empId);
+  const latest = latestTeamRequest(state, empId, "NEW_JOINER");
 
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -125,6 +125,8 @@ function EmployeeDashboard({ state, currentUser }: LoadedStore & { currentUser: 
       : "Basic items are locked because your team request has been submitted."
     : undefined;
   const teamReqs = team ? teamRequirements(state, team.id) : [];
+  const pending = pendingTeamRequest(state, empId);
+  const pendingMove = pending?.type === "INTERNAL_MOVEMENT" ? pending : undefined;
 
   return (
     <div className="space-y-6">
@@ -159,7 +161,15 @@ function EmployeeDashboard({ state, currentUser }: LoadedStore & { currentUser: 
         <Banner variant="success">All onboarding requirements are complete. Your onboarding status is Completed.</Banner>
       )}
 
-      {team && (
+      {team && pendingMove && (
+        <p className="text-sm">
+          Your move request <strong>{pendingMove.id}</strong> is pending.{" "}
+          <Link href="/movement" className="link">
+            View internal movement
+          </Link>
+        </p>
+      )}
+      {team && !pendingMove && (
         <p className="text-sm">
           Moving to another team?{" "}
           <Link href="/movement" className="link">

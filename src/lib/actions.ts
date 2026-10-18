@@ -213,3 +213,33 @@ export function decideTeamRequest(
   assignments.push({ employeeId: request.employeeId, teamId: request.toTeamId, startDate: today, viaRequestId: request.id });
   return { ...next, teamAssignments: assignments };
 }
+
+/** BR4, BR5, BR11, BR12, BR13: an employee with a team asks to move. Assignments change only on approval. */
+export function submitMoveRequest(
+  s: AppState,
+  input: { empId: string; toTeamId: TeamId; comment?: string },
+  now = new Date(),
+): { state: AppState; id: string } {
+  const { empId } = input;
+  requireEmployee(s, empId);
+  const fromTeamId = currentTeamId(s, empId);
+  if (!fromTeamId) throw new DomainError("Internal movement needs a current team.");
+  requireNoPendingRequest(s, empId);
+  if (input.toTeamId === fromTeamId) throw new DomainError("Please choose a team other than your current team.");
+  const team = requireTeam(s, input.toTeamId);
+  const employeeComment = normalizeComment(input.comment);
+
+  const { id, counters } = nextId(s.counters, "MOVE");
+  const request: TeamRequest = {
+    id,
+    type: "INTERNAL_MOVEMENT",
+    employeeId: empId,
+    fromTeamId,
+    toTeamId: team.id,
+    managerId: team.managerId,
+    employeeComment,
+    status: "PENDING_MANAGER_APPROVAL",
+    submittedAt: now.toISOString(),
+  };
+  return { state: { ...s, teamRequests: [...s.teamRequests, request], counters }, id };
+}

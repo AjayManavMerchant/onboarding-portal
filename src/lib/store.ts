@@ -100,6 +100,11 @@ export const store = {
     commit({ state });
     return id;
   },
+  submitMoveRequest(empId: string, toTeamId: TeamId, comment: string): string {
+    const { state, id } = actions.submitMoveRequest(getSnapshot().state, { empId, toTeamId, comment });
+    commit({ state });
+    return id;
+  },
   decideTeamRequest(reqId: string, decision: Decision, comment: string | undefined, actorId: string) {
     commit({ state: actions.decideTeamRequest(getSnapshot().state, { reqId, decision, comment, actorId }) });
   },
