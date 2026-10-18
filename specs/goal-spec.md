@@ -1,7 +1,7 @@
 # Goal Spec — Employee Onboarding & Internal Movement Portal (MVP 1.0)
 
 **Source:** `docs/vision.md` (MVP 1.0)
-**Status:** Draft for review
+**Status:** Approved — all open questions decided (2026-10-18)
 **Related specs:** [`data-spec.md`](./data-spec.md) · [`frontend-spec.md`](./frontend-spec.md) · [`implementation-plan.md`](./implementation-plan.md) · [`open-questions.md`](./open-questions.md)
 
 ---
@@ -113,10 +113,10 @@ The MVP is done when **all** of these pass in a manual demo on the deployed Verc
 
 ## 9. Assumptions
 
-Defaults chosen so work is not blocked. Each one is listed in `open-questions.md` and can be changed.
+All of these are decided; see `open-questions.md`.
 
 - **Decided (Q1):** a rejected new joiner checks the result on a public **"Check registration status"** page linked from Home, by entering their request ID. No login needed.
-- Internal Movement can be used by **any active employee who has a current team**. Rahul is the only one at seed time.
-- Rahul's Team A checklist is seeded as **fully complete**, so his starting overall status is `Completed`.
-- During a pending team or movement request, the employee's overall status is `Pending Team Approval`.
-- Basic checklist items become **read-only** once a team request has been submitted. This stops the unlock rule from being undone.
+- **Decided (Q2):** Internal Movement can be used by **any active employee who has a current team**. Rahul is the only one at seed time.
+- **Decided (Q3):** Rahul's Team A checklist is seeded as **fully complete**, so his starting overall status is `Completed`.
+- **Decided (Q4):** during a pending team or movement request, the employee's overall status is `Pending Team Approval`.
+- **Decided (Q5):** basic checklist items become **read-only** once a team request has been submitted. This stops the unlock rule from being undone.
