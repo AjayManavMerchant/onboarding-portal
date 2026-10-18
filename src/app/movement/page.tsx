@@ -72,6 +72,22 @@ function MovementPage({ state, currentUser }: LoadedStore & { currentUser: User 
         </p>
       </section>
 
+      {team && movedIn && (
+        <>
+          {!teamDone && (
+            <Banner variant="success">
+              Your move to {team.name} has been approved. Complete your new team&apos;s onboarding below.
+            </Banner>
+          )}
+          <p className="text-sm text-gray-600">ℹ️ {COPY.selfConfirmed}</p>
+          <ChecklistSection title={`Team-Specific Accesses — ${team.name}`} kind="ACCESS" requirements={teamReqs} state={state} empId={empId} />
+          <ChecklistSection title={`Team-Specific Training — ${team.name}`} kind="TRAINING" requirements={teamReqs} state={state} empId={empId} />
+          {teamDone && (
+            <Banner variant="success">All onboarding requirements are complete. Your onboarding status is Completed.</Banner>
+          )}
+        </>
+      )}
+
       {!team ? (
         <Banner variant="warning">
           Internal movement is available once you have a team.{" "}
@@ -122,25 +138,9 @@ function MovementPage({ state, currentUser }: LoadedStore & { currentUser: User 
         </section>
       )}
 
-      {team && movedIn && (
-        <>
-          {!teamDone && (
-            <Banner variant="success">
-              Your move to {team.name} has been approved. Complete your new team&apos;s onboarding below.
-            </Banner>
-          )}
-          <p className="text-sm text-gray-600">ℹ️ {COPY.selfConfirmed}</p>
-          <ChecklistSection title={`Team-Specific Accesses — ${team.name}`} kind="ACCESS" requirements={teamReqs} state={state} empId={empId} />
-          <ChecklistSection title={`Team-Specific Training — ${team.name}`} kind="TRAINING" requirements={teamReqs} state={state} empId={empId} />
-          {teamDone && (
-            <Banner variant="success">All onboarding requirements are complete. Your onboarding status is Completed.</Banner>
-          )}
-        </>
-      )}
-
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Team history</h2>
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div className="relative overflow-x-auto rounded-xl border border-gray-200 bg-white">
           <table className="w-full text-left text-sm">
             <thead className="bg-gray-50 text-xs uppercase text-gray-600">
               <tr>

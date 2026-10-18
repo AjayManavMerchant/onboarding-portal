@@ -205,6 +205,8 @@ Copy taken word for word from the vision (do not reword):
 - Mobile first. Content max width `max-w-5xl`, centred, with `px-4` padding.
 - Tables: on screens narrower than `md`, wrap them in `overflow-x-auto` (checklists stay readable because they have only 4 columns). The manager and HR tables may become stacked cards on mobile if time allows. Otherwise horizontal scroll is fine.
 - Buttons and checkboxes have a touch target of at least 40px.
+- Checklists below `sm`: the procedure/training link moves under the item name and the link column is hidden, so the **Completed** checkbox is always visible without scrolling. Table scroll wrappers are `relative` so screen-reader-only text cannot widen the page.
+- `/movement`: after an approved move, the approved banner and the new team's checklists come before the request form.
 - Every form input has a `<label>`. Errors use `aria-describedby`. Banners use `role="status"` (info and success) or `role="alert"` (error).
 - Colour is never the only signal: status badges always show text.
 

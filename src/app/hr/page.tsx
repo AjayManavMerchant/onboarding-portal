@@ -78,7 +78,7 @@ function HrDashboard({ state, currentUser }: LoadedStore & { currentUser: User }
           {tab === "PENDING" ? "No registrations awaiting approval." : "No registrations yet."}
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div className="relative overflow-x-auto rounded-xl border border-gray-200 bg-white">
           <table className="w-full text-left text-sm">
             <thead className="bg-gray-50 text-xs uppercase text-gray-600">
               <tr>

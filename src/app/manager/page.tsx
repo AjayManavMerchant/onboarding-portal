@@ -54,7 +54,7 @@ function ManagerDashboard({ state, currentUser }: LoadedStore & { currentUser: U
         {pending.length === 0 ? (
           <p className="card text-center text-sm text-gray-600">No pending requests for your team.</p>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <div className="relative overflow-x-auto rounded-xl border border-gray-200 bg-white">
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 text-xs uppercase text-gray-600">
                 <tr>
@@ -114,7 +114,7 @@ function ManagerDashboard({ state, currentUser }: LoadedStore & { currentUser: U
         {rows.length === 0 ? (
           <p className="card text-center text-sm text-gray-600">No employees in your team yet.</p>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+          <div className="relative overflow-x-auto rounded-xl border border-gray-200 bg-white">
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 text-xs uppercase text-gray-600">
                 <tr>
