@@ -1,6 +1,6 @@
 // Store actions — see specs/data-spec.md §6–7. Each takes the current state and returns a new one,
 // or throws DomainError. Rules are enforced here, not only in the UI.
-import { DomainError, nextId, userById } from "./domain";
+import { DomainError, basicLocked, currentTeamId, nextId, userById } from "./domain";
 import type { AppState, Decision, Registration, User } from "./types";
 
 const MAX_COMMENT = 500;
@@ -104,4 +104,29 @@ export function decideRegistration(
     : s.users;
 
   return { ...s, users, registrations: s.registrations.map((r) => (r.id === reg.id ? decided : r)) };
+}
+
+/** BR3, BR18, BR19: tick or untick one checklist item for an employee. */
+export function toggleCompletion(
+  s: AppState,
+  input: { empId: string; reqId: string; checked: boolean },
+  now = new Date(),
+): AppState {
+  const { empId, reqId, checked } = input;
+  if (userById(s, empId)?.role !== "EMPLOYEE") throw new DomainError("Only employees have checklists.");
+  const req = s.requirements.find((r) => r.id === reqId);
+  if (!req) throw new DomainError(`Checklist item ${reqId} was not found.`);
+  if (req.scope === "BASIC" && basicLocked(s, empId)) {
+    throw new DomainError("Basic items are locked because your team request has been submitted.");
+  }
+  if (req.scope === "TEAM" && req.teamId !== currentTeamId(s, empId)) {
+    throw new DomainError("You can only update checklist items for your current team.");
+  }
+
+  const done = s.completions.some((c) => c.employeeId === empId && c.requirementId === reqId);
+  if (checked === done) return s;
+  const completions = checked
+    ? [...s.completions, { employeeId: empId, requirementId: reqId, completedAt: now.toISOString() }]
+    : s.completions.filter((c) => !(c.employeeId === empId && c.requirementId === reqId));
+  return { ...s, completions };
 }

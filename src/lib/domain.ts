@@ -116,3 +116,11 @@ export function overallStatus(s: AppState, empId: string): OverallStatus {
 export function registrationOverallStatus(reg: Registration): OverallStatus | undefined {
   return reg.status === "PENDING_HR_APPROVAL" ? "REGISTRATION_PENDING" : undefined;
 }
+
+/** BR18: basic items are read-only once a NEW_JOINER request is pending/approved, or the employee has a team (Q8). */
+export function basicLocked(s: AppState, empId: string): boolean {
+  return (
+    currentTeamId(s, empId) !== undefined ||
+    s.teamRequests.some((r) => r.employeeId === empId && r.type === "NEW_JOINER" && r.status !== "REJECTED")
+  );
+}

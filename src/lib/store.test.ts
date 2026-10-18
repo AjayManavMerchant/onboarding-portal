@@ -37,3 +37,19 @@ describe("store persistence (data-spec §1)", () => {
     expect(JSON.parse(mem.get("onboarding-portal:session:v1")!)).toEqual({ currentUserId: null });
   });
 });
+
+describe("checklist persistence (AC4)", () => {
+  it("keeps ticks after a reload and across user switches", () => {
+    const id = store.submitRegistration({ fullName: "Asha", email: "asha@example.com", dateOfJoining: "2026-11-02" });
+    store.decideRegistration(id, "APPROVE", "", "u-priya");
+    store.setCurrentUser("u-reg-001");
+    store.toggleCompletion("u-reg-001", "basic-acc-1", true);
+    store.toggleCompletion("u-reg-001", "basic-trn-2", true);
+    store.logout();
+    store.setCurrentUser("u-priya");
+
+    // A fresh load (as on page refresh) reads the same completions back.
+    const reloaded = loadState().completions.filter((c) => c.employeeId === "u-reg-001").map((c) => c.requirementId);
+    expect(reloaded).toEqual(["basic-acc-1", "basic-trn-2"]);
+  });
+});

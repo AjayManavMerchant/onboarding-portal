@@ -92,6 +92,9 @@ export const store = {
   decideRegistration(regId: string, decision: Decision, comment: string | undefined, actorId: string) {
     commit({ state: actions.decideRegistration(getSnapshot().state, { regId, decision, comment, actorId }) });
   },
+  toggleCompletion(empId: string, reqId: string, checked: boolean) {
+    commit({ state: actions.toggleCompletion(getSnapshot().state, { empId, reqId, checked }) });
+  },
   setCurrentUser(userId: string | null) {
     commit({ currentUserId: userId });
   },

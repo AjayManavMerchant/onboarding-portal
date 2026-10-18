@@ -232,7 +232,7 @@ Every rule is checked inside the store action that performs the write, not only 
 | BR15 | On rejection: set status `REJECTED`, `decidedAt`, `managerComment`. Nothing else changes. | `decideTeamRequest` | §4.7, §5.5 |
 | BR16 | Registration email must be a valid email. It must not match (case-insensitive) a registration that is `PENDING_HR_APPROVAL` or `APPROVED`, or any seeded user. Rejected emails may register again. | `submitRegistration` | — (data integrity) |
 | BR17 | Required registration fields: Full Name (non-empty after trim), Official Email, Date of Joining (valid date). Employee ID and Department are optional. | `submitRegistration` | §4.2 |
-| BR18 | Basic checklist items can be toggled only while the employee has **no** pending or approved NEW_JOINER request. After that they are read-only. This stops the unlock from being undone. | `toggleCompletion` | §4.5 (assumption, Q5) |
+| BR18 | Basic checklist items can be toggled only while the employee has **no** pending or approved NEW_JOINER request **and no current team**. After that they are read-only. This stops the unlock from being undone (and covers existing employees like Rahul, who never had a NEW_JOINER request). | `toggleCompletion`, `basicLocked()` | §4.5 (Q5, Q8) |
 | BR19 | Team checklist items for the current team can be ticked and unticked freely. The status updates right away. | `toggleCompletion` | §4.8 |
 | BR20 | IDs are `PREFIX-NNN`, zero-padded to 3 digits, from `counters`. Each prefix has its own counter. A counter never goes back down except on Reset. | `nextId()` | §4.2, §4.6, §5.4 |
 | BR21 | Comments (HR, manager, employee) are optional, trimmed and at most 500 characters. An empty comment is stored as `undefined`. | all decide/submit actions | §4.3, §4.7 |
