@@ -1,6 +1,8 @@
 # Employee Onboarding & Internal Movement Portal
 
-**Live demo:** https://onboarding-portal-lake.vercel.app
+- **Live demo:** https://onboarding-portal-lake.vercel.app
+- **Design walkthrough:** https://onboarding-portal-lake.vercel.app/design.html — design decisions, architecture, testing and interview prep
+- **Session transcript:** [docs/session-transcript.md](docs/session-transcript.md) — the full Claude Code session that built this project
 
 A one-day MVP demo prototype for two employee journeys:
 
@@ -10,6 +12,10 @@ A one-day MVP demo prototype for two employee journeys:
 HR, managers and employees are demo users picked from a dropdown — no passwords. Everything runs in the browser, so one reviewer can play every role in a single browser window.
 
 > **Demo prototype:** all data is stored in your browser's `localStorage`. Use **Reset demo data** in the header to return to the starting state at any time.
+
+## Disclaimer
+
+This is a personal academic project built for the Agentic AI Coding course at IISc. It does not use any employer internal data, systems, documents or confidential information. All names, teams, access items and training links are fictional sample data.
 
 ---
 
